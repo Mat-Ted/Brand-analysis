@@ -8,3 +8,5 @@ transformers
 torch
 plotly
 tensorflow
+wordcloud
+matplotlib
