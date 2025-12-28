@@ -1,14 +1,20 @@
-# 📈 Brand Sentiment Analysis 2023
+📈 Brand Sentiment Analysis 2023
 
-Ta aplikacija analizira ugled blagovne znamke z uporabo strojnega učenja.
+This application analyzes brand reputation using machine learning.
+🛠 Technologies:
 
-### 🛠 Tehnologije:
-- **Python & Streamlit** za uporabniški vmesnik.
-- **Hugging Face Transformers (DistilBERT)** za analizo sentimenta.
-- **Selenium & BeautifulSoup** za spletno strganje podatkov.
+    Python & Streamlit for the user interface.
 
-### 📊 Funkcionalnosti:
-- Prikaz razmerja pozitivnih in negativnih ocen za leto 2023.
-- Interaktivni grafi s stopnjo zaupanja modela (Confidence Score).
-- Katalog izdelkov s slikami in cenami.
-- Dodan "Word Cloud" generation
+    Hugging Face Transformers (DistilBERT) for sentiment analysis.
+
+    Selenium & BeautifulSoup for web scraping.
+
+📊 Features:
+
+    Sentiment Overview: Displays the ratio of positive vs. negative reviews for 2023.
+
+    Interactive Visualizations: Graphs showcasing the model's Confidence Scores.
+
+    Product Catalog: Includes product images and pricing data.
+
+    Word Cloud Generation: Automatically generates word clouds from review data.
