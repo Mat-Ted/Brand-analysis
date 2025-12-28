@@ -11,3 +11,4 @@ Ta aplikacija analizira ugled blagovne znamke z uporabo strojnega učenja.
 - Prikaz razmerja pozitivnih in negativnih ocen za leto 2023.
 - Interaktivni grafi s stopnjo zaupanja modela (Confidence Score).
 - Katalog izdelkov s slikami in cenami.
+- Dodan "Word Cloud" generation
