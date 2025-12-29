@@ -3,6 +3,6 @@ pandas
 plotly
 transformers
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch
+torch==2.1.2+cpu
 wordcloud
 matplotlib
