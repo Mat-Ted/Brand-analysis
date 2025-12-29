@@ -9,10 +9,17 @@ from wordcloud import WordCloud
 st.set_page_config(page_title="Brand Sentiment Analysis 2023", layout="wide")
 
 # 2. Hitro nalaganje modela
-@st.cache_resource
+# show_spinner prepreči, da bi Render mislil, da aplikacija ne odziva
+@st.cache_resource(show_spinner="Nalagam AI model za analizo sentimenta... Prosim počakaj, to lahko traja do 2 minuti.")
 def load_sentiment_model():
-    return pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+    # device=-1 prisili model v uporabo procesorja (CPU), kar porabi manj RAM-a kot iskanje GPU
+    return pipeline(
+        "sentiment-analysis", 
+        model="distilbert-base-uncased-finetuned-sst-2-english",
+        device=-1
+    )
 
+# Inicializacija modela
 sentiment_pipeline = load_sentiment_model()
 
 # 3. Optimizirana masovna AI analiza
