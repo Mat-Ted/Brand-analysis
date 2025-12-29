@@ -13,39 +13,49 @@ from wordcloud import WordCloud
 # 1. Nastavitve strani
 st.set_page_config(page_title="Brand Sentiment Analysis 2023", layout="wide")
 
-# 2. Hitro nalaganje modela (MiniLM različica)
+## 2. Hitro nalaganje modela (MiniLM)
 @st.cache_resource(show_spinner="Nalagam lahki AI model...")
 def load_sentiment_model():
-    # Uporabi ta model - je majhen, hiter in namenjen sentimentu
     model = pipeline(
         "sentiment-analysis", 
-        model="lxyuan/distilbert-base-multilingual-cased-sentiments-student",
+        model="cross-encoder/ms-marco-MiniLM-L-2-v2",
         device=-1
     )
     gc.collect() 
     return model
 
-# Inicializacija modela (pazi, da je ob levem robu!)
 sentiment_pipeline = load_sentiment_model()
 
-# 3. Posodobljena analiza (MiniLM vrača rezultate malo drugače)
+# 3. Pametna analiza v paketih (Batch Processing)
 @st.cache_data
 def get_bulk_sentiment(texts):
+    # 1. Čiščenje podatkov in omejitev dolžine
     processed_texts = [str(t)[:512] for t in texts if pd.notna(t)]
     if not processed_texts:
         return [], []
     
-    results = sentiment_pipeline(processed_texts)
+    # 2. Procesiranje v manjših paketih (batch_size), da ne sesujemo Renderja
+    # 16 stavkov hkrati je varno za 512MB RAM
+    results = sentiment_pipeline(processed_texts, batch_size=16)
     
-    # Prilagoditev za ta model (pretvori v slovenščino)
     sentiments = []
+    confidences = []
+    
     for r in results:
-        if r['label'] == 'positive':
-            sentiments.append("Pozitivno")
+        score = r['score']
+        # 3. OPTIMIZACIJA PRAGA: 
+        # Model MiniLM je včasih strog. Če ugotoviš, da preveč pozitivnih ocen 
+        # označi kot negativne, spusti prag na 0.3 ali 0.4.
+        if score > 0.4:  # Znižan prag za boljšo zaznavo pozitivnih ocen
+            label = "Pozitivno"
         else:
-            sentiments.append("Negativno") # Vse ostalo (neutral/negative) damo pod negativno
+            label = "Negativno"
             
-    confidences = [round(r['score'], 3) for r in results]
+        sentiments.append(label)
+        confidences.append(round(score, 3))
+    
+    # Ročno čiščenje spomina po analizi
+    gc.collect()
     return sentiments, confidences
 
 # 4. Funkcija za Word Cloud (DODANO NAZAJ)
