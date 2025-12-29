@@ -13,28 +13,32 @@ from wordcloud import WordCloud
 # 1. Nastavitve strani
 st.set_page_config(page_title="Brand Sentiment Analysis 2023", layout="wide")
 
-# 2. Hitro nalaganje modela
-# show_spinner prepreči, da bi Render mislil, da aplikacija ne odziva
-@st.cache_resource(show_spinner="Nalagam AI model...")
+# 2. Hitro nalaganje modela (MiniLM različica)
+@st.cache_resource(show_spinner="Nalagam lahki AI model...")
 def load_sentiment_model():
+    # Model ms-marco-MiniLM-L-2-v2 je bistveno manjši (~80MB) od DistilBERT-a
     model = pipeline(
         "sentiment-analysis", 
-        model="distilbert-base-uncased-finetuned-sst-2-english",
+        model="cross-encoder/ms-marco-MiniLM-L-2-v2",
         device=-1
     )
-    gc.collect()  # Sprostitev spomina takoj po nalaganju
+    gc.collect() 
     return model
 
+# Inicializacija modela (pazi, da je ob levem robu!)
 sentiment_pipeline = load_sentiment_model()
 
-# 3. Optimizirana masovna AI analiza
+# 3. Posodobljena analiza (MiniLM vrača rezultate malo drugače)
 @st.cache_data
 def get_bulk_sentiment(texts):
     processed_texts = [str(t)[:512] for t in texts if pd.notna(t)]
     if not processed_texts:
         return [], []
+    
     results = sentiment_pipeline(processed_texts)
-    sentiments = ["Pozitivno" if r['label'] == 'POSITIVE' else "Negativno" for r in results]
+    
+    # MiniLM uporablja točkovanje (score). Če je score visok, je sentiment pozitiven.
+    sentiments = ["Pozitivno" if r['score'] > 0.5 else "Negativno" for r in results]
     confidences = [round(r['score'], 3) for r in results]
     return sentiments, confidences
 
