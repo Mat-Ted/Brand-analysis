@@ -1,8 +1,8 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+transformers
 streamlit
 pandas
 plotly
-transformers
---extra-index-url https://download.pytorch.org/whl/cpu
-torch
 wordcloud
 matplotlib
