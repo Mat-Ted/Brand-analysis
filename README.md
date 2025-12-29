@@ -1,20 +1,22 @@
 📈 Brand Sentiment Analysis 2023
 
-This application analyzes brand reputation using machine learning.
-🛠 Technologies:
+This application provides a comprehensive analysis of brand reputation by leveraging advanced Machine Learning and Natural Language Processing (NLP) techniques.
+🛠 Technologies
 
-    Python & Streamlit for the user interface.
+    Python & Streamlit: Powers the interactive web-based user interface.
 
-    Hugging Face Transformers (DistilBERT) for sentiment analysis.
+    Hugging Face Transformers (MiniLM): Utilizes a high-performance, lightweight Transformer model for accurate and fast sentiment classification.
 
-    Selenium & BeautifulSoup for web scraping.
+    Selenium & BeautifulSoup: Used for automated data collection and web scraping of customer feedback.
 
-📊 Features:
+    Plotly & WordCloud: Generates dynamic data visualizations and keyword analysis.
 
-    Sentiment Overview: Displays the ratio of positive vs. negative reviews for 2023.
+📊 Features
 
-    Interactive Visualizations: Graphs showcasing the model's Confidence Scores.
+    Sentiment Overview: Provides a high-level visual ratio of positive vs. negative customer reviews specifically for the year 2023.
 
-    Product Catalog: Includes product images and pricing data.
+    Interactive Visualizations: Includes a Month Slider and confidence score metrics to validate the model's performance.
 
-    Word Cloud Generation: Automatically generates word clouds from review data.
+    Product Catalog: A structured display of the brand's product lineup, including high-quality images and pricing information.
+
+    Dual Word Cloud Generation: Automatically extracts and visualizes key descriptors from reviews, separated into positive poudarks (green) and negative critiques (red).
