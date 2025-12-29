@@ -13,12 +13,15 @@ from wordcloud import WordCloud
 # 1. Nastavitve strani
 st.set_page_config(page_title="Brand Sentiment Analysis 2023", layout="wide")
 
-## 2. Hitro nalaganje modela (MiniLM)
-@st.cache_resource(show_spinner="Nalagam lahki AI model...")
+# 2. Hitro nalaganje modela (Namenski sentiment model)
+@st.cache_resource(show_spinner="Nalagam specializiran sentiment model...")
 def load_sentiment_model():
+    # Model 'prajjwal/bert-tiny' ali 'distilbert-base-uncased-finetuned-sst-2-english' 
+    # sta v 'quantized' verziji ali majhni izvedbi idealna.
+    # Spodnji model je uradno najboljši za sentiment v razmerju hitrost/velikost.
     model = pipeline(
         "sentiment-analysis", 
-        model="cross-encoder/ms-marco-MiniLM-L-2-v2",
+        model="distilbert-base-uncased-finetuned-sst-2-english",
         device=-1
     )
     gc.collect() 
@@ -26,35 +29,30 @@ def load_sentiment_model():
 
 sentiment_pipeline = load_sentiment_model()
 
-# 3. Pametna analiza v paketih (Batch Processing)
+# 3. Pametna analiza z avtomatskimi oznakami
 @st.cache_data
 def get_bulk_sentiment(texts):
-    # 1. Čiščenje podatkov in omejitev dolžine
     processed_texts = [str(t)[:512] for t in texts if pd.notna(t)]
     if not processed_texts:
         return [], []
     
-    # 2. Procesiranje v manjših paketih (batch_size), da ne sesujemo Renderja
-    # 16 stavkov hkrati je varno za 512MB RAM
-    results = sentiment_pipeline(processed_texts, batch_size=16)
+    # Batch_size=8 je varnejši za Render, da prepreči "spajke" v RAM-u
+    results = sentiment_pipeline(processed_texts, batch_size=8)
     
     sentiments = []
     confidences = []
     
     for r in results:
-        score = r['score']
-        # 3. OPTIMIZACIJA PRAGA: 
-        # Model MiniLM je včasih strog. Če ugotoviš, da preveč pozitivnih ocen 
-        # označi kot negativne, spusti prag na 0.3 ali 0.4.
-        if score > 0.4:  # Znižan prag za boljšo zaznavo pozitivnih ocen
+        # Ta model že sam vrača 'POSITIVE' ali 'NEGATIVE', 
+        # zato ne potrebuješ ročnega nastavljanja praga (0.4)
+        if r['label'] == 'POSITIVE':
             label = "Pozitivno"
         else:
             label = "Negativno"
             
         sentiments.append(label)
-        confidences.append(round(score, 3))
+        confidences.append(round(r['score'], 3))
     
-    # Ročno čiščenje spomina po analizi
     gc.collect()
     return sentiments, confidences
 
