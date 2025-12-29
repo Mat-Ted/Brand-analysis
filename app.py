@@ -1,4 +1,9 @@
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["PYTORCH_NO_CUDA_MEMORY_CACHING"] = "1"
+
 import streamlit as st
+import gc 
 import pandas as pd
 import plotly.express as px
 from transformers import pipeline
@@ -10,16 +15,16 @@ st.set_page_config(page_title="Brand Sentiment Analysis 2023", layout="wide")
 
 # 2. Hitro nalaganje modela
 # show_spinner prepreči, da bi Render mislil, da aplikacija ne odziva
-@st.cache_resource(show_spinner="Nalagam AI model za analizo sentimenta... Prosim počakaj, to lahko traja do 2 minuti.")
+@st.cache_resource(show_spinner="Nalagam AI model...")
 def load_sentiment_model():
-    # device=-1 prisili model v uporabo procesorja (CPU), kar porabi manj RAM-a kot iskanje GPU
-    return pipeline(
+    model = pipeline(
         "sentiment-analysis", 
         model="distilbert-base-uncased-finetuned-sst-2-english",
         device=-1
     )
+    gc.collect()  # Sprostitev spomina takoj po nalaganju
+    return model
 
-# Inicializacija modela
 sentiment_pipeline = load_sentiment_model()
 
 # 3. Optimizirana masovna AI analiza
