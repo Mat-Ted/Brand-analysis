@@ -13,47 +13,51 @@ from wordcloud import WordCloud
 # 1. Nastavitve strani
 st.set_page_config(page_title="Brand Sentiment Analysis 2023", layout="wide")
 
-# 2. Hitro nalaganje modela (Namenski sentiment model)
-@st.cache_resource(show_spinner="Nalagam specializiran sentiment model...")
+# 2. Hitro nalaganje modela (Ekstremno lahka verzija)
+@st.cache_resource(show_spinner="Nalagam optimiziran AI model...")
 def load_sentiment_model():
-    # Model 'prajjwal/bert-tiny' ali 'distilbert-base-uncased-finetuned-sst-2-english' 
-    # sta v 'quantized' verziji ali majhni izvedbi idealna.
-    # Spodnji model je uradno najboljši za sentiment v razmerju hitrost/velikost.
+    # Uporabimo MiniLM-L6, ki je "zlata sredina" med velikostjo in natančnostjo
     model = pipeline(
         "sentiment-analysis", 
-        model="distilbert-base-uncased-finetuned-sst-2-english",
+        model="cross-encoder/ms-marco-MiniLM-L-6-v2", 
         device=-1
     )
     gc.collect() 
     return model
 
+# Inicializacija modela
 sentiment_pipeline = load_sentiment_model()
 
-# 3. Pametna analiza z avtomatskimi oznakami
+# 3. Analiza z omejevanjem porabe virov (Batch processing)
 @st.cache_data
 def get_bulk_sentiment(texts):
-    processed_texts = [str(t)[:512] for t in texts if pd.notna(t)]
+    # Omejimo dolžino besedila in filtriramo prazne vrstice
+    processed_texts = [str(t)[:300] for t in texts if pd.notna(t)]
     if not processed_texts:
         return [], []
     
-    # Batch_size=8 je varnejši za Render, da prepreči "spajke" v RAM-u
-    results = sentiment_pipeline(processed_texts, batch_size=8)
-    
+    # Namesto da vržemo vse v model hkrati, procesiramo v serijah po 8
+    # To prepreči "Memory Spike" na Renderju
     sentiments = []
     confidences = []
     
-    for r in results:
-        # Ta model že sam vrača 'POSITIVE' ali 'NEGATIVE', 
-        # zato ne potrebuješ ročnega nastavljanja praga (0.4)
-        if r['label'] == 'POSITIVE':
-            label = "Pozitivno"
-        else:
-            label = "Negativno"
+    # Procesiranje po majhnih delih
+    batch_size = 8
+    for i in range(0, len(processed_texts), batch_size):
+        batch = processed_texts[i:i + batch_size]
+        results = sentiment_pipeline(batch)
+        
+        for r in results:
+            # Prag za MiniLM (običajno nad 0.3 ali 0.4 velja za relevantno/pozitivno)
+            if r['score'] > 0.4:
+                sentiments.append("Pozitivno")
+            else:
+                sentiments.append("Negativno")
+            confidences.append(round(r['score'], 3))
             
-        sentiments.append(label)
-        confidences.append(round(r['score'], 3))
-    
-    gc.collect()
+        # Sprostimo spomin po vsaki seriji
+        gc.collect()
+        
     return sentiments, confidences
 
 # 4. Funkcija za Word Cloud (DODANO NAZAJ)
